@@ -16,7 +16,14 @@ const BreedSchema = new mongoose.Schema({
     number_of_genetic_ailments: Number,
     genetic_ailments: String,
     grooming_frequency: String,
-    suitability_for_children: Number
+    suitability_for_children: Number,
+    image: {
+        type: Buffer
+    },
+    fits: {
+        type: Number,
+        default: 0
+    }
 })
 
 BreedSchema.set('toJSON', {

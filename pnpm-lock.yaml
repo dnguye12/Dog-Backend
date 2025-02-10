@@ -11,6 +11,9 @@ importers:
       '@tensorflow/tfjs-node':
         specifier: ^4.22.0
         version: 4.22.0(seedrandom@3.0.5)
+      async-g-i-s:
+        specifier: ^1.5.5
+        version: 1.5.5(node-fetch@2.7.0)
       axios:
         specifier: ^1.7.9
         version: 1.7.9
@@ -159,6 +162,11 @@ packages:
 
   array-flatten@1.1.1:
     resolution: {integrity: sha512-PCVAQswWemu6UdxsDFFX/+gVeYqKAod3D3UVm91jHwynguOwAvYPhx8nNlM++NqRcK6CxxpUafjmhIdKiHibqg==}
+
+  async-g-i-s@1.5.5:
+    resolution: {integrity: sha512-u3DX5WfcfOmobReUbEZxFERh7+FY0bpVZSlTTjd1e514vDsDWJ3JpMf6liaNLLFZvtBPtcwApJp+BmIKDBnjcA==}
+    peerDependencies:
+      node-fetch: ^2.7.0
 
   asynckit@0.4.0:
     resolution: {integrity: sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==}
@@ -1098,6 +1106,10 @@ snapshots:
       sprintf-js: 1.0.3
 
   array-flatten@1.1.1: {}
+
+  async-g-i-s@1.5.5(node-fetch@2.7.0):
+    dependencies:
+      node-fetch: 2.7.0
 
   asynckit@0.4.0: {}
 

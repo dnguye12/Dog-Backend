@@ -7,6 +7,8 @@ const path = require("path");
 
 //all the routers
 const predictRouter = require("./controllers/predict")
+const mlModelRouter = require("./controllers/ml-model")
+const breedRouter = require("./controllers/breed")
 
 const middleware = require("./utils/middleware");
 const logger = require("./utils/logger");
@@ -37,6 +39,8 @@ app.use(express.static(path.join(__dirname, "dist")));
 
 //backend only listen to these url
 app.use("/api/predict", predictRouter)
+app.use("/api/ml-model", mlModelRouter)
+app.use("/api/breed", breedRouter)
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
