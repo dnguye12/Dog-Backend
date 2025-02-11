@@ -47,8 +47,8 @@ breedRouter.patch("/fit", async (req, res) => {
     }
 })
 
-breedRouter.get("/image", async(req, res) => {
-    const {id} = req.query 
+breedRouter.get("/image", async (req, res) => {
+    const { id } = req.query
 
     try {
         const breed = await Breed.findById(id)
@@ -57,20 +57,21 @@ breedRouter.get("/image", async(req, res) => {
             return res.status(404).json("Breed not found")
         }
 
-        if(breed.image) {
+        if (breed.image) {
             return res.status(200).json(breed.image.toString("base64"))
-        }else {
+        } else {
             let helper
             const googleImages = await gis(`${breed.breed} dog breed 1920x1080`)
 
-            for(let i = 0; i < 10; i++) {
-                if(googleImages[i].width > googleImages[i].height) {
+            for (let i = 0; i < 10; i++) {
+                if (googleImages[i].width > googleImages[i].height && googleImages[i].width >= 1000) {
                     const image = await axios.get(googleImages[i].url, { responseType: 'arraybuffer' })
                     helper = Buffer.from(image.data, "binary")
+                    break
                 }
             }
 
-            if(!helper) {
+            if (!helper) {
                 const image = await axios.get(googleImages[0].url, { responseType: 'arraybuffer' })
                 helper = Buffer.from(image.data, "binary")
             }
@@ -81,7 +82,7 @@ breedRouter.get("/image", async(req, res) => {
 
             return res.status(200).json(savedBreed.image.toString("base64"));
         }
-    }catch(error) {
+    } catch (error) {
         console.log(error)
         return res.status(500).json("Internal error")
     }

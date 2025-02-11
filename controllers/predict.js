@@ -3,7 +3,8 @@ const tf = require('@tensorflow/tfjs-node');
 const fs = require('fs');
 const path = require('path');
 
-const dogBreeds = JSON.parse(fs.readFileSync(path.join(__dirname, "../public/dog_breeds.json"), "utf8"))
+const Breed = require("../models/breed")
+
 const normalizationMinMax = JSON.parse(fs.readFileSync(path.join(__dirname, "../public/normalization_params.json"), "utf8"))
 const featureNames = [
     "popularity_ranking",
@@ -47,7 +48,14 @@ predictRouter.get("/", async (req, res) => {
         const prediction = model.predict(inputTensor)
         const predictionData = await prediction.data()
 
-        return res.status(200).json(predictionData)
+        const breeds = await Breed.find({}).lean()
+
+        const helper = breeds.map((b, i) => ({
+            ...b,
+            prediction: predictionData[i]
+        }))
+
+        return res.status(200).json(helper)
     } catch (error) {
         console.log(error)
         return res.status(500).json("Internal error")
