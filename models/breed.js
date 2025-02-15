@@ -17,9 +17,7 @@ const BreedSchema = new mongoose.Schema({
     genetic_ailments: String,
     grooming_frequency: String,
     suitability_for_children: Number,
-    image: {
-        type: Buffer
-    },
+    image: String,
     fits: {
         type: Number,
         default: 0
