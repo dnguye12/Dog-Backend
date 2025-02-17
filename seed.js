@@ -1,9 +1,21 @@
 const fs = require('fs');
 
 const Papa = require('papaparse');
+
 const Breed = require("./models/breed")
+const UserPreference = require("./models/user-preference")
+
 const config = require("./utils/config");
 const logger = require("./utils/logger");
+
+const featureNames = [
+    "popularity_ranking",
+    "size",
+    "lifetime_cost",
+    "intelligence",
+    "grooming_frequency",
+    "suitability_for_children"
+];
 
 const mongoose = require("mongoose");
 
@@ -59,4 +71,104 @@ const seed = async () => {
     }
 }
 
-seed()
+const scoreBreed = (breed, preferences) => {
+    let score = 0
+
+    for (let feature of featureNames) {
+        const userVal = preferences[feature]
+        if (userVal !== -1) {
+            if (feature === "size") {
+                if (breed[feature] !== userVal) {
+                    return -Infinity
+                } else {
+                    score += 10
+                }
+            } else if (feature === "grooming_frequency") {
+                if (breed[feature] !== userVal) {
+                    score -= 1
+                } else {
+                    score += 1
+                }
+            } else if (feature === "suitability_for_children") {
+                if (breed[feature] !== userVal) {
+                    score -= 1
+                } else {
+                    score += 1
+                }
+            } else {
+                score += 1 / (1 + Math.abs(breed[feature] - userVal))
+            }
+        }
+    }
+
+    return score
+}
+
+const generateFakePreference = (stats) => {
+    return {
+        popularity_ranking: Math.random() < 0.2 ? -1 : Math.floor(Math.random() * stats.highest_popularity) + stats.lowest_popularity,
+        size: Math.random() < 0.2 ? -1 : Math.floor(Math.random() * 3) + 1,
+        lifetime_cost: Math.random() < 0.2 ? -1 : Math.floor(Math.random() * stats.highest_lifetime_cost) + stats.lowest_lifetime_cost,
+        intelligence: Math.random() < 0.2 ? -1 : Math.floor(Math.random() * stats.highest_intelligence) + stats.lowest_intelligence,
+        grooming_frequency: Math.random() < 0.2 ? -1 : Math.floor(Math.random() * 3),
+        suitability_for_children: Math.random() < 0.2 ? -1 : Math.floor(Math.random() * 3) + 1
+    }
+}
+
+const simulateScoring = async (breeds, stats) => {
+    const preferences = generateFakePreference(stats)
+
+    let bestScore = -Infinity
+    let bestBreed = null
+
+    for (let breed of breeds) {
+        const score = scoreBreed(breed, preferences)
+        if (score > bestScore) {
+            bestScore = score
+            bestBreed = breed
+        }
+    }
+
+    if (bestBreed) {
+        const helper = new UserPreference({
+            ...preferences,
+            recommendation: bestBreed._id,
+            recommendationName: bestBreed.breed
+        })
+        await helper.save()
+    }
+}
+
+const seedPreferences = async () => {
+    try {
+        await UserPreference.deleteMany({})
+        const breeds = await Breed.find({})
+        const stats = await Breed.aggregate([
+            {
+                $group: {
+                    _id: null,
+                    lowest_lifetime_cost: { $min: "$lifetime_cost" },
+                    highest_lifetime_cost: { $max: "$lifetime_cost" },
+                    lowest_intelligence: { $min: "$intelligence" },
+                    highest_intelligence: { $max: "$intelligence" },
+                    lowest_longevity: { $min: "$longevity" },
+                    highest_longevity: { $max: "$longevity" },
+                    lowest_popularity: { $min: "$popularity_ranking" },
+                    highest_popularity: { $max: "$popularity_ranking" },
+                    lowest_number_of_genetic_ailments: { $min: "$number_of_genetic_ailments" },
+                    highest_number_of_genetic_ailments: { $max: "$number_of_genetic_ailments" },
+                }
+            }
+        ])
+        for (let i = 0; i < 10000; i++) {
+            await simulateScoring(breeds, stats[0])
+        }
+    } catch (error) {
+        console.log(error)
+    } finally {
+        mongoose.connection.close();
+        console.log("Database connection closed.");
+    }
+}
+
+seedPreferences()

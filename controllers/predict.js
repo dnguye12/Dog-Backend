@@ -1,9 +1,18 @@
 const predictRouter = require("express").Router()
 const tf = require('@tensorflow/tfjs-node');
-const fs = require('fs');
 const path = require('path');
 
-const Breed = require("../models/breed")
+const Breed = require("../models/breed");
+const scoreBreed = require("../utils/helper");
+
+const featureNames = [
+    "popularity_ranking",
+    "size",
+    "lifetime_cost",
+    "intelligence",
+    "grooming_frequency",
+    "suitability_for_children"
+];
 
 const loadModel = async () => {
     // eslint-disable-next-line no-undef
@@ -23,8 +32,6 @@ const loadStats = async () => {
                     highest_intelligence: { $max: "$intelligence" },
                     lowest_popularity: { $min: "$popularity_ranking" },
                     highest_popularity: { $max: "$popularity_ranking" },
-                    lowest_number_of_genetic_ailments: { $min: "$number_of_genetic_ailments" },
-                    highest_number_of_genetic_ailments: { $max: "$number_of_genetic_ailments" },
                 }
             }
         ])
@@ -46,48 +53,48 @@ const normalizeInput = (value, min, max) => {
 predictRouter.get("/", async (req, res) => {
     const userInput = req.query
 
-    const processedInput = []
-
-    console.log(userInput)
-
-
+    Object.keys(userInput).forEach(key => {
+        userInput[key] = parseFloat(userInput[key]);
+    });
 
     try {
         const stats = await loadStats()
 
-        if (userInput.popularity_ranking !== -1) {
-            processedInput.push(normalizeInput(userInput.popularity_ranking, stats.lowest_popularity, stats.highest_popularity))
-        }
-        if (userInput.size !== -1) {
-            processedInput.push(normalizeInput(userInput.size, 1, 3))
-        }
-        if (userInput.lifetime_cost !== -1) {
-            processedInput.push(normalizeInput(userInput.lifetime_cost, stats.lowest_lifetime_cost, stats.highest_lifetime_cost))
-        }
-        if (userInput.intelligence !== -1) {
-            processedInput.push(normalizeInput(userInput.intelligence, stats.lowest_intelligence, stats.highest_intelligence))
-        }
-        if (userInput.grooming_frequency !== -1) {
-            processedInput.push(normalizeInput(userInput.grooming_frequency, 0, 2))
-        }
-        if (userInput.suitability_for_children !== -1) {
-            processedInput.push(normalizeInput(userInput.suitability_for_children, 1, 3))
-        }
+        const featureRanges = {
+            popularity_ranking: [stats.lowest_popularity, stats.highest_popularity],
+            size: [1, 3],
+            lifetime_cost: [stats.lowest_lifetime_cost, stats.highest_lifetime_cost],
+            intelligence: [stats.lowest_intelligence, stats.highest_intelligence],
+            grooming_frequency: [0, 2],
+            suitability_for_children: [1, 3]
+        };
+
+        let processedFeatures = [];
+
+        featureNames.forEach((feature, index) => {
+            if (userInput[feature] === -1) {
+                processedFeatures.push(-1)
+            } else {
+                const [min, max] = featureRanges[feature];
+                let normalizedValue = normalizeInput(userInput[feature], min, max);
+                processedFeatures.push(normalizedValue);
+            }
+        })
+
+        const inputTensor = tf.tensor2d([processedFeatures])
 
         const model = await loadModel()
-        console.log(processedInput)
-        const inputTensor = tf.tensor2d([processedInput])
-        const prediction = model.predict(inputTensor)
-        const predictionData = await prediction.data()
 
         const breeds = await Breed.find({}).lean()
-
-        const helper = breeds.map((b, i) => ({
+        const breedResults = breeds.map((b, i) => ({
             ...b,
-            prediction: predictionData[i]
+            prediction: scoreBreed(b, userInput, stats)
         }))
 
-        return res.status(200).json(helper)
+        breedResults.sort((a, b) => b.prediction - a.prediction)
+
+        const topResults = breedResults.slice(0, 3)
+        return res.status(200).json(topResults)
     } catch (error) {
         console.log(error)
         return res.status(500).json("Internal error")
