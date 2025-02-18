@@ -1,7 +1,6 @@
 const breedRouter = require("express").Router()
 
 const gis = require('async-g-i-s');
-const axios = require('axios');
 
 const Breed = require("../models/breed");
 

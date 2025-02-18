@@ -1,5 +1,7 @@
 const mongoose = require("mongoose")
 
+const fitType = ["GOOD", "BAD", "NEUTRAL"]
+
 const UserPreferenceSchema = new mongoose.Schema({
     popularity_ranking: Number,
     size: Number,
@@ -7,11 +9,19 @@ const UserPreferenceSchema = new mongoose.Schema({
     intelligence: Number,
     grooming_frequency: Number,
     suitability_for_children: Number,
-    recommendation: {
+    breed: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Breed"
     },
-    recommendationName: String
+    user: {
+        type: String,
+        ref: "User"
+    },
+    fit: {
+        type: String,
+        enum: fitType,
+        default: "NEUTRAL"
+    }
 })
 
 UserPreferenceSchema.set('toJSON', {

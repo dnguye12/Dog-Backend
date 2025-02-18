@@ -171,4 +171,28 @@ const seedPreferences = async () => {
     }
 }
 
-seedPreferences()
+const updateBreeds = async () => {
+    try {
+        const updateResult = await Breed.updateMany({}, {
+            $unset: { fits: 1 }
+        })
+        console.log(`Updated ${updateResult.modifiedCount} breeds.`);
+    } catch (error) {
+        console.error('Error updating breeds:', error);
+    } finally {
+        await mongoose.disconnect();
+    }
+}
+
+const helper = async () => {
+    try {
+        await UserPreference.deleteMany({})
+        console.log("done")
+    }catch (error) {
+        console.error('Error updating breeds:', error);
+    } finally {
+        await mongoose.disconnect();
+    }
+}
+
+helper()

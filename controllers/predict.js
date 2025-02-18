@@ -3,6 +3,7 @@ const tf = require('@tensorflow/tfjs-node');
 const path = require('path');
 
 const Breed = require("../models/breed");
+const UserPreference = require("../models/user-preference")
 const scoreBreed = require("../utils/helper");
 
 const featureNames = [
@@ -51,7 +52,9 @@ const normalizeInput = (value, min, max) => {
 }
 
 predictRouter.get("/", async (req, res) => {
-    const userInput = req.query
+    let userInput = req.query
+    const userId = userInput.userId
+    delete userInput.userId
 
     Object.keys(userInput).forEach(key => {
         userInput[key] = parseFloat(userInput[key]);
@@ -86,13 +89,38 @@ predictRouter.get("/", async (req, res) => {
         const model = await loadModel()
 
         const breeds = await Breed.find({}).lean()
-        let breedResults = breeds.map((b, i) => ({
-            ...b,
-            prediction: scoreBreed(b, userInput, stats)
-        }))
+
+        let breedResults = await Promise.all(
+            breeds.map(async (b, i) => {
+                const existingPreference = await UserPreference.findOne({
+                    popularity_ranking: userInput.popularity_ranking,
+                    size: userInput.size,
+                    lifetime_cost: userInput.lifetime_cost,
+                    intelligence: userInput.intelligence,
+                    grooming_frequency: userInput.grooming_frequency,
+                    suitability_for_children: userInput.suitability_for_children,
+                    breed: b._id,
+                    user: userId
+                });
+
+                if (existingPreference) {
+                    return {
+                        ...b,
+                        prediction: scoreBreed(b, userInput, stats),
+                        fit: existingPreference.fit === "GOOD" ? 1 : existingPreference.fit === "BAD" ? -1 : 0
+                    };
+                } else {
+                    return {
+                        ...b,
+                        prediction: scoreBreed(b, userInput, stats),
+                        fit: 0
+                    };
+                }
+            })
+        );
 
         breedResults = breedResults.filter(b => b.prediction && b.prediction !== -Infinity)
-        breedResults.sort((a, b) => b.prediction.score - a.prediction.score)
+        breedResults.sort((a, b) => b.prediction.score + b.fit * 0.5 - a.prediction.score - a.fit * 0.5)
 
         const topResults = breedResults.slice(0, 3)
         return res.status(200).json(topResults)

@@ -18,10 +18,18 @@ const BreedSchema = new mongoose.Schema({
     grooming_frequency: String,
     suitability_for_children: Number,
     image: String,
-    fits: {
-        type: Number,
-        default: 0
-    }
+    likes: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'UserPreference'
+        }
+    ],
+    dislikes: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'UserPreference'
+        }
+    ]
 })
 
 BreedSchema.set('toJSON', {

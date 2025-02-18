@@ -9,6 +9,8 @@ const path = require("path");
 const predictRouter = require("./controllers/predict")
 const mlModelRouter = require("./controllers/ml-model")
 const breedRouter = require("./controllers/breed")
+const userRouter = require("./controllers/user")
+const userPreferenceRouter = require("./controllers/user-preference")
 
 const middleware = require("./utils/middleware");
 const logger = require("./utils/logger");
@@ -41,6 +43,8 @@ app.use(express.static(path.join(__dirname, "dist")));
 app.use("/api/predict", predictRouter)
 app.use("/api/ml-model", mlModelRouter)
 app.use("/api/breed", breedRouter)
+app.use("/api/user", userRouter)
+app.use("/api/user-preference", userPreferenceRouter)
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
