@@ -23,25 +23,27 @@ const convertGrooming = (grooming_frequency) => {
 
 const scoreBreed = (breed, preferences, stats) => {
     let score = 0
+    let contributions = {}
 
     for (let feature of featureNames) {
+        let contribution = 0
         const userVal = preferences[feature]
         if (userVal !== -1) {
             if (feature === "size") {
                 if (breed[feature] !== userVal) {
                     return -Infinity
                 } else {
-                    score += 1
+                    contribution = 1;
                 }
             } else if (feature === "grooming_frequency") {
                 const helper = convertGrooming(breed[feature])
                 if (helper === userVal) {
-                    score += 1
+                    contribution = 1;
                 }
             } else if (feature === "suitability_for_children") {
                 if (breed[feature] === userVal) {
-                    score += 1
-                }else {
+                    contribution = 1;
+                } else {
                     return -Infinity
                 }
             }
@@ -59,19 +61,22 @@ const scoreBreed = (breed, preferences, stats) => {
                 }
                 const range = statHigh - statLow;
                 const diff = Math.abs(breed[feature] - userVal);
-                score += range ? Math.max(0, 1 - diff / range) : (breed[feature] === userVal ? 1 : 0);
+                contribution = range ? Math.max(0, 1 - diff / range) : (breed[feature] === userVal ? 1 : 0);
             }
         } else {
             if (feature === "popularity_ranking") {
-                score += 0.5 * (1 - (breed[feature] - stats.lowest_popularity) / (stats.highest_popularity - stats.lowest_popularity))
+                contribution = 0.5 * (1 - (breed[feature] - stats.lowest_popularity) / (stats.highest_popularity - stats.lowest_popularity))
             } else if (feature === "lifetime_cost") {
-                score += 0.5 * (1 - (breed[feature] - stats.lowest_lifetime_cost) / (stats.highest_lifetime_cost - stats.lowest_lifetime_cost))
+                contribution = 0.5 * (1 - (breed[feature] - stats.lowest_lifetime_cost) / (stats.highest_lifetime_cost - stats.lowest_lifetime_cost))
             } else if (feature === "intelligence") {
-                score += 0.5 * ((breed[feature] - stats.lowest_intelligence) / (stats.highest_intelligence - stats.lowest_intelligence))
+                contribution = 0.5 * ((breed[feature] - stats.lowest_intelligence) / (stats.highest_intelligence - stats.lowest_intelligence))
             }
         }
+
+        contributions[feature] = contribution
+        score += contribution
     }
-    return score
+    return { score, contributions }
 }
 
 module.exports = scoreBreed

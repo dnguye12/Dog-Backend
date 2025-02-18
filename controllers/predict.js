@@ -86,12 +86,13 @@ predictRouter.get("/", async (req, res) => {
         const model = await loadModel()
 
         const breeds = await Breed.find({}).lean()
-        const breedResults = breeds.map((b, i) => ({
+        let breedResults = breeds.map((b, i) => ({
             ...b,
             prediction: scoreBreed(b, userInput, stats)
         }))
 
-        breedResults.sort((a, b) => b.prediction - a.prediction)
+        breedResults = breedResults.filter(b => b.prediction && b.prediction !== -Infinity)
+        breedResults.sort((a, b) => b.prediction.score - a.prediction.score)
 
         const topResults = breedResults.slice(0, 3)
         return res.status(200).json(topResults)
