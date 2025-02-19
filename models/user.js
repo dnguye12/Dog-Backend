@@ -11,6 +11,18 @@ const UserSchema = new mongoose.Schema({
     imageUrl: {
         type: String
     },
+    submit: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Breed"
+        }
+    ],
+    approve: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Breed"
+        }
+    ]
 })
 
 UserSchema.set('toJSON', {

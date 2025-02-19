@@ -1,6 +1,7 @@
 const breedRouter = require("express").Router()
 
 const gis = require('async-g-i-s');
+const stringSimilarity = require('string-similarity');
 
 const Breed = require("../models/breed");
 
@@ -129,6 +130,23 @@ breedRouter.get("/stats", async (req, res) => {
 
         return res.status(200).json(stats[0])
     } catch (error) {
+        console.log(error)
+        return res.status(500).json("Internal error")
+    }
+})
+
+breedRouter.get("/similar-name", async(req, res) => {
+    const {name} = req.query
+
+    try {
+        const breeds = await Breed.find({})
+        const breedNames = breeds.map(b => b.breed.toLowerCase())
+
+        const matches = stringSimilarity.findBestMatch(name.toLowerCase(), breedNames)
+        const similarBreeds  = matches.ratings.filter(rating => rating.rating >= 0.4).sort((a, b) => b.rating - a.rating).map(match => breeds.find(b => b.breed.toLowerCase() === match.target))
+
+        return res.status(200).json(similarBreeds)
+    }catch (error) {
         console.log(error)
         return res.status(500).json("Internal error")
     }

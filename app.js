@@ -11,6 +11,7 @@ const mlModelRouter = require("./controllers/ml-model")
 const breedRouter = require("./controllers/breed")
 const userRouter = require("./controllers/user")
 const userPreferenceRouter = require("./controllers/user-preference")
+const pendingRouter = require('./controllers/pending')
 
 const middleware = require("./utils/middleware");
 const logger = require("./utils/logger");
@@ -45,6 +46,7 @@ app.use("/api/ml-model", mlModelRouter)
 app.use("/api/breed", breedRouter)
 app.use("/api/user", userRouter)
 app.use("/api/user-preference", userPreferenceRouter)
+app.use("/api/pending", pendingRouter)
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));

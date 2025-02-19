@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const uniqueValidator = require('mongoose-unique-validator')
 
-const BreedSchema = new mongoose.Schema({
+const PendingSchema = new mongoose.Schema({
     breed: {
         type: String,
         index: true
@@ -16,26 +16,24 @@ const BreedSchema = new mongoose.Schema({
     lifetime_cost: Number,
     intelligence: Number,
     longevity: Number,
-    number_of_genetic_ailments: Number,
-    genetic_ailments: String,
     grooming_frequency: String,
     suitability_for_children: Number,
-    image: String,
-    likes: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'UserPreference'
-        }
-    ],
-    dislikes: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'UserPreference'
-        }
-    ]
+    approve: {
+        type: Number,
+        default: 0
+    },
+    user: {
+        type: String,
+        ref: "User"
+    },
+    approved_by: [{
+        type: String,
+        ref: "User",
+    }],
+    image: String
 })
 
-BreedSchema.set('toJSON', {
+PendingSchema.set('toJSON', {
     transform: (document, returnedObject) => {
         returnedObject.id = returnedObject._id.toString()
         delete returnedObject._id
@@ -43,6 +41,6 @@ BreedSchema.set('toJSON', {
     }
 })
 
-BreedSchema.plugin(uniqueValidator)
+PendingSchema.plugin(uniqueValidator)
 
-module.exports = mongoose.model("Breed", BreedSchema)
+module.exports = mongoose.model("Pending", PendingSchema)

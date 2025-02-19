@@ -41,6 +41,9 @@ importers:
       papaparse:
         specifier: ^5.5.2
         version: 5.5.2
+      string-similarity:
+        specifier: ^4.0.4
+        version: 4.0.4
 
 packages:
 
@@ -835,6 +838,10 @@ packages:
   statuses@2.0.1:
     resolution: {integrity: sha512-RwNA9Z/7PrK06rYLIzFMlaF+l73iwpzsqRIFgbMLbTcLD6cOao82TaWefPXQvB2fOC4AjuYSEndS7N/mTCbkdQ==}
     engines: {node: '>= 0.8'}
+
+  string-similarity@4.0.4:
+    resolution: {integrity: sha512-/q/8Q4Bl4ZKAPjj8WerIBJWALKkaPRfrvhfF8k/B23i4nzrlRj2/go1m90In7nG/3XDSbOo0+pu6RvCTM9RGMQ==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   string-width@4.2.3:
     resolution: {integrity: sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==}
@@ -1762,6 +1769,8 @@ snapshots:
   sprintf-js@1.0.3: {}
 
   statuses@2.0.1: {}
+
+  string-similarity@4.0.4: {}
 
   string-width@4.2.3:
     dependencies:
