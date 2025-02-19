@@ -44,6 +44,17 @@ breedRouter.get("/", async (req, res) => {
     }
 })
 
+breedRouter.get("/size", async (req, res) => {
+    try {
+        const breeds = await Breed.find({})
+
+        return res.status(200).json(breeds.length)
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json("Internal error")
+    }
+})
+
 breedRouter.patch("/fit", async (req, res) => {
     const { id, type } = req.query
 
@@ -122,11 +133,11 @@ breedRouter.get("/stats", async (req, res) => {
                     highest_longevity: { $max: "$longevity" },
                     lowest_popularity: { $min: "$popularity_ranking" },
                     highest_popularity: { $max: "$popularity_ranking" },
-                    lowest_number_of_genetic_ailments: {$min: "$number_of_genetic_ailments"},
-                    highest_number_of_genetic_ailments: {$max: "$number_of_genetic_ailments"},
+                    lowest_number_of_genetic_ailments: { $min: "$number_of_genetic_ailments" },
+                    highest_number_of_genetic_ailments: { $max: "$number_of_genetic_ailments" },
                 }
             }
-        ]) 
+        ])
 
         return res.status(200).json(stats[0])
     } catch (error) {
@@ -135,18 +146,18 @@ breedRouter.get("/stats", async (req, res) => {
     }
 })
 
-breedRouter.get("/similar-name", async(req, res) => {
-    const {name} = req.query
+breedRouter.get("/similar-name", async (req, res) => {
+    const { name } = req.query
 
     try {
         const breeds = await Breed.find({})
         const breedNames = breeds.map(b => b.breed.toLowerCase())
 
         const matches = stringSimilarity.findBestMatch(name.toLowerCase(), breedNames)
-        const similarBreeds  = matches.ratings.filter(rating => rating.rating >= 0.4).sort((a, b) => b.rating - a.rating).map(match => breeds.find(b => b.breed.toLowerCase() === match.target))
+        const similarBreeds = matches.ratings.filter(rating => rating.rating >= 0.4).sort((a, b) => b.rating - a.rating).map(match => breeds.find(b => b.breed.toLowerCase() === match.target))
 
         return res.status(200).json(similarBreeds)
-    }catch (error) {
+    } catch (error) {
         console.log(error)
         return res.status(500).json("Internal error")
     }
