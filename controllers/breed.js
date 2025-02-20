@@ -44,6 +44,39 @@ breedRouter.get("/", async (req, res) => {
     }
 })
 
+breedRouter.get("/all", async (req, res) => {
+    try {
+        const breeds = await Breed.find({})
+
+        for (const breed of breeds) {
+            if (!breed.image) {
+                let helper
+                const googleImages = await gis(`${breed.breed} dog breed 1920x1080`)
+
+                for (let i = 0; i < 10; i++) {
+                    if (googleImages[i].width > googleImages[i].height && googleImages[i].width >= 1000) {
+                        helper = googleImages[i].url
+                        break
+                    }
+                }
+
+                if (!helper) {
+                    helper = googleImages[0].url
+                }
+
+                breed.image = helper
+
+                await breed.save()
+            }
+        }
+
+        return res.status(200).json(breeds)
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json("Internal error")
+    }
+})
+
 breedRouter.get("/size", async (req, res) => {
     try {
         const breeds = await Breed.find({})
