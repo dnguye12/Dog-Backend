@@ -7,6 +7,7 @@ const UserPreference = require("./models/user-preference")
 
 const config = require("./utils/config");
 const logger = require("./utils/logger");
+const scoreBreed = require("./utils/helper");
 
 const featureNames = [
     "popularity_ranking",
@@ -69,39 +70,6 @@ const seed = async () => {
         mongoose.connection.close();
         console.log("Database connection closed.");
     }
-}
-
-const scoreBreed = (breed, preferences) => {
-    let score = 0
-
-    for (let feature of featureNames) {
-        const userVal = preferences[feature]
-        if (userVal !== -1) {
-            if (feature === "size") {
-                if (breed[feature] !== userVal) {
-                    return -Infinity
-                } else {
-                    score += 10
-                }
-            } else if (feature === "grooming_frequency") {
-                if (breed[feature] !== userVal) {
-                    score -= 1
-                } else {
-                    score += 1
-                }
-            } else if (feature === "suitability_for_children") {
-                if (breed[feature] !== userVal) {
-                    score -= 1
-                } else {
-                    score += 1
-                }
-            } else {
-                score += 1 / (1 + Math.abs(breed[feature] - userVal))
-            }
-        }
-    }
-
-    return score
 }
 
 const generateFakePreference = (stats) => {
@@ -183,16 +151,3 @@ const updateBreeds = async () => {
         await mongoose.disconnect();
     }
 }
-
-const helper = async () => {
-    try {
-        await UserPreference.deleteMany({})
-        console.log("done")
-    }catch (error) {
-        console.error('Error updating breeds:', error);
-    } finally {
-        await mongoose.disconnect();
-    }
-}
-
-helper()

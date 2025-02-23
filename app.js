@@ -7,7 +7,7 @@ const path = require("path");
 
 //all the routers
 const predictRouter = require("./controllers/predict")
-const mlModelRouter = require("./controllers/ml-model")
+const sandboxRouter = require("./controllers/sandbox")
 const breedRouter = require("./controllers/breed")
 const userRouter = require("./controllers/user")
 const userPreferenceRouter = require("./controllers/user-preference")
@@ -42,7 +42,7 @@ app.use(express.static(path.join(__dirname, "dist")));
 
 //backend only listen to these url
 app.use("/api/predict", predictRouter)
-app.use("/api/ml-model", mlModelRouter)
+app.use("/api/sb", sandboxRouter)
 app.use("/api/breed", breedRouter)
 app.use("/api/user", userRouter)
 app.use("/api/user-preference", userPreferenceRouter)
